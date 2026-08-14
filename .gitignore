@@ -1,0 +1,51 @@
+﻿# XAMPP specific
+*.log
+*.tmp
+*.sqlite
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# Database files (don't include sensitive data)
+*.sql
+*.sql.gz
+
+# Backup files
+*.bak
+*.backup
+
+# PHP error logs
+error_log
+*.error.log
+
+# Session files
+sess_*
+
+# User uploaded files
+uploads/
+temp/
+
+# Composer
+vendor/
+composer.lock
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Node modules (if any)
+node_modules/
+npm-debug.log*
+
+# Package files
+*.zip
+*.tar.gz
+*.rar
