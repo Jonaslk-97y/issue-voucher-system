@@ -81,9 +81,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_POST = [];
         
     } catch (Exception $e) {
+    if ($pdo->inTransaction()) {
         $pdo->rollBack();
-        $error = $e->getMessage();
     }
+    $error = $e->getMessage();
+}
 }
 
 include_once '../../includes/header.php';

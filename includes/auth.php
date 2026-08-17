@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Check if user is logged in
 function isLoggedIn() {
@@ -14,7 +16,7 @@ function hasRole($role) {
 // Require login
 function requireLogin() {
     if (!isLoggedIn()) {
-        header('Location: index.php');
+        header('Location: ' . APP_URL . '/index.php');
         exit();
     }
 }
