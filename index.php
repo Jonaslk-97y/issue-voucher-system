@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     
     if ($username && $password) {
+        var_dump($username, $password); 
         try {
             $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND is_active = 1");
             $stmt->execute([$username]);

@@ -12,6 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $asset_type = sanitize($_POST['asset_type']);
         $device_name = sanitize($_POST['device_name']);
         $serial_number = strtoupper(sanitize($_POST['serial_number']));
+        $icn = sanitize($_POST['icn'] ?? '');
+        $item_condition = sanitize($_POST['item_condition'] ?? '');
         $model = sanitize($_POST['model']);
         $manufacturer = sanitize($_POST['manufacturer']);
         $purchase_date = sanitize($_POST['purchase_date']);
@@ -36,12 +38,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Insert asset
         $stmt = $pdo->prepare(
-            "INSERT INTO assets (asset_type, device_name, serial_number, model, manufacturer, 
+            "INSERT INTO assets (asset_type, device_name, serial_number, icn, item_condition, model, manufacturer, 
              purchase_date, warranty_end, current_location, status) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'available')"
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available')"
         );
         $stmt->execute([
-            $asset_type, $device_name, $serial_number, $model, $manufacturer,
+            $asset_type, $device_name, $serial_number, $icn, $item_condition, $model, $manufacturer,
             $purchase_date, $warranty_end, $current_location
         ]);
         
@@ -117,6 +119,26 @@ include_once '../../includes/header.php';
                             <label for="model" class="form-label">Model</label>
                             <input type="text" class="form-control" id="model" name="model" 
                                    placeholder="e.g., Precision 5560">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="icn" class="form-label">ICN (Item Control Number)</label>
+                            <input type="text" class="form-control" id="icn" name="icn" 
+                                   value="<?php echo htmlspecialchars($_POST['icn'] ?? ''); ?>" 
+                                   placeholder="e.g., ICN-0042">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="item_condition" class="form-label">Condition</label>
+                            <select class="form-select" id="item_condition" name="item_condition">
+                                <option value="">Select Condition</option>
+                                <option value="New">New</option>
+                                <option value="Good">Good</option>
+                                <option value="Fair">Fair</option>
+                                <option value="Poor">Poor</option>
+                                <option value="Damaged">Damaged</option>
+                            </select>
                         </div>
                     </div>
                     

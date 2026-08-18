@@ -26,6 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $issue_date = sanitize($_POST['issue_date'] ?? date('Y-m-d'));
         $expected_return_date = sanitize($_POST['expected_return_date'] ?? '');
         $purpose = sanitize($_POST['purpose'] ?? '');
+        $account = sanitize($_POST['account'] ?? '');
+        $requisition_number = sanitize($_POST['requisition_number'] ?? '');
+        $authority_reference = sanitize($_POST['authority_reference'] ?? '');
+        $item_condition = sanitize($_POST['item_condition'] ?? '');
+        $quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT) ?: 1;
+        $item_price = filter_input(INPUT_POST, 'item_price', FILTER_VALIDATE_FLOAT) ?: 0;
+        $total_price = $quantity * $item_price;
         
         // Validation
         if (!$asset_id || !$received_by || !$from_location || !$to_location) {
@@ -54,13 +61,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Create voucher
         $stmt = $pdo->prepare(
             "INSERT INTO issue_vouchers 
-             (voucher_number, asset_id, issued_by, received_by, from_location, to_location, 
+             (voucher_number, account, requisition_number, authority_reference, asset_id, issued_by, received_by, 
+              from_location, to_location, item_condition, quantity, item_price, total_price,
               issue_date, expected_return_date, purpose, status) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'issued')"
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'issued')"
         );
         $stmt->execute([
-            $voucher_number, $asset_id, $_SESSION['user_id'], $received_by,
-            $from_location, $to_location, $issue_date, $expected_return_date, $purpose
+            $voucher_number, $account, $requisition_number, $authority_reference, $asset_id, $_SESSION['user_id'], $received_by,
+            $from_location, $to_location, $item_condition, $quantity, $item_price, $total_price,
+            $issue_date, $expected_return_date, $purpose
         ]);
         $voucher_id = $pdo->lastInsertId();
         
@@ -81,11 +90,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_POST = [];
         
     } catch (Exception $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        $error = $e->getMessage();
     }
-    $error = $e->getMessage();
-}
 }
 
 include_once '../../includes/header.php';
@@ -138,6 +147,47 @@ include_once '../../includes/header.php';
                                     </option>
                                 <?php endforeach; ?>
                             </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="account" class="form-label">Account</label>
+                            <input type="text" class="form-control" id="account" name="account">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="requisition_number" class="form-label">Requisition Number</label>
+                            <input type="text" class="form-control" id="requisition_number" name="requisition_number">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="authority_reference" class="form-label">Authority Reference</label>
+                            <input type="text" class="form-control" id="authority_reference" name="authority_reference">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="item_condition" class="form-label">Condition</label>
+                            <select class="form-select" id="item_condition" name="item_condition">
+                                <option value="">Select</option>
+                                <option value="New">New</option>
+                                <option value="Good">Good</option>
+                                <option value="Fair">Fair</option>
+                                <option value="Poor">Poor</option>
+                                <option value="Damaged">Damaged</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="quantity" class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="item_price" class="form-label">Item Price</label>
+                            <input type="number" step="0.01" class="form-control" id="item_price" name="item_price" value="0.00" min="0">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Total Price</label>
+                            <input type="text" class="form-control" id="total_price_display" value="0.00" readonly>
                         </div>
                     </div>
                     
@@ -197,5 +247,15 @@ include_once '../../includes/header.php';
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('quantity').addEventListener('input', updateTotal);
+document.getElementById('item_price').addEventListener('input', updateTotal);
+function updateTotal() {
+    const qty = parseFloat(document.getElementById('quantity').value) || 0;
+    const price = parseFloat(document.getElementById('item_price').value) || 0;
+    document.getElementById('total_price_display').value = (qty * price).toFixed(2);
+}
+</script>
 
 <?php include_once '../../includes/footer.php'; ?>
